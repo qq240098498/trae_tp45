@@ -5,7 +5,8 @@ import {
 } from 'recharts'
 import {
   TrendingUp, TrendingDown, BarChart3, Clock, Timer,
-  Truck, AlertTriangle, AlertCircle, Info, X, ArrowRight
+  Truck, AlertTriangle, AlertCircle, Info, X, ArrowRight,
+  Database, RefreshCw, Calculator, Archive
 } from 'lucide-react'
 import { kpiData, chainNodes } from '@/data/mockData'
 import type { KPIData } from '@/types'
@@ -202,6 +203,110 @@ function HealthRadar() {
   )
 }
 
+function DataSourcePanel() {
+  const dataSources = [
+    {
+      icon: Database,
+      label: '数据采集范围',
+      content: '覆盖 6 家核心供应商、3 条主要产线、8 种 SKU 的全链路数据',
+      accent: 'var(--accent-cyan)',
+    },
+    {
+      icon: Archive,
+      label: '历史数据窗口',
+      content: '基于 2022年6月 - 2024年6月 共 24 个月的历史交易与库存数据',
+      accent: 'var(--accent-amber)',
+    },
+    {
+      icon: Calculator,
+      label: 'KPI 计算公式',
+      content: '周转率 = 年度销售成本 / 平均库存；准时交付率 = 准时交付单数 / 总交付单数 × 100%',
+      accent: 'var(--accent-green)',
+    },
+    {
+      icon: RefreshCw,
+      label: '数据更新频率',
+      content: '实时数据每分钟刷新，KPI 趋势按日汇总，季节性因子按月校准',
+      accent: 'var(--accent-blue)',
+    },
+  ]
+
+  const statItems = [
+    { name: '供应商总数', value: '6', unit: '家' },
+    { name: 'SKU 品类数', value: '8', unit: '类' },
+    { name: '链路监测节点', value: '8', unit: '个' },
+    { name: '风险规则数', value: '4', unit: '条' },
+    { name: '采购订单样本', value: '6', unit: '单' },
+    { name: '排程计划数', value: '6', unit: '条' },
+  ]
+
+  return (
+    <div className="card-static animate-fade-in-up stagger-7">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="section-title mb-0">
+          <Info className="w-4 h-4" />
+          数据统计来源说明
+        </h3>
+        <span className="badge badge-info">演示数据模式</span>
+      </div>
+
+      <div className="grid grid-cols-4 gap-4 mb-4">
+        {dataSources.map((item, i) => (
+          <div key={i} className="p-3 rounded-lg" style={{ background: 'var(--bg-primary)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <item.icon className="w-4 h-4" style={{ color: item.accent }} />
+              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                {item.label}
+              </span>
+            </div>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              {item.content}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 mb-2">
+        <Database className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
+        <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+          当前数据集统计
+        </span>
+      </div>
+      <div className="grid grid-cols-6 gap-3">
+        {statItems.map((item, i) => (
+          <div key={i} className="p-2 rounded-lg text-center" style={{ background: 'var(--bg-primary)' }}>
+            <div className="font-mono text-lg font-bold" style={{ color: 'var(--accent-amber)' }}>
+              {item.value}
+              <span className="text-xs font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>
+                {item.unit}
+              </span>
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              {item.name}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+          <span className="font-medium" style={{ color: 'var(--accent-cyan)' }}>说明：</span>
+          当前系统运行于演示模式，所有数据均为基于真实业务场景构建的模拟数据，用于展示供应链优化系统的分析能力与决策建议。
+          接入实际业务系统时，可通过配置 ERP/WMS/MES 等数据源接口实现真实数据同步，数据源模块位于{' '}
+          <code className="font-mono px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-secondary)', color: 'var(--accent-amber)' }}>
+            src/data/mockData.ts
+          </code>
+          ，推荐算法位于{' '}
+          <code className="font-mono px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-secondary)', color: 'var(--accent-amber)' }}>
+            src/lib/utils.ts
+          </code>
+          。
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [time, setTime] = useState(() => new Date())
 
@@ -235,6 +340,8 @@ export default function Dashboard() {
           <AlertStream />
         </div>
       </div>
+
+      <DataSourcePanel />
     </div>
   )
 }
