@@ -203,3 +203,56 @@ export interface ChainBreakAlert {
   handledAt?: string
   handledNote?: string
 }
+
+export interface AlternativeSupplier {
+  id: string
+  name: string
+  category: string
+  onTimeRate: number
+  leadTime: number
+  quality: number
+  cost: number
+  region: string
+  certification: string[]
+  capacity: number
+  historicalDeliveryCount: number
+  averageDelayDays: number
+  pricePerUnit: number
+  cooperationYears: number
+  hasEmergencyResponse: boolean
+  minimumOrderQty: number
+}
+
+export interface RecommendationScores {
+  qualificationMatch: number
+  deliveryPerformance: number
+  priceCompetitiveness: number
+  switchingCost: number
+  overallScore: number
+}
+
+export interface AlternativeSupplierRecommendation {
+  id: string
+  timestamp: string
+  atRiskSupplierId: string
+  atRiskSupplierName: string
+  triggerReason: string
+  triggerDetails: {
+    riskIndex: number
+    onTimeRate?: number
+    consecutiveDelays?: number
+  }
+  recommendations: Array<{
+    rank: number
+    supplier: AlternativeSupplier
+    scores: RecommendationScores
+    estimatedSwitchingDays: number
+    switchingPhases: Array<{
+      phase: string
+      duration: number
+      description: string
+    }>
+    estimatedCostIncrease: number
+    riskMitigation: string[]
+  }>
+}

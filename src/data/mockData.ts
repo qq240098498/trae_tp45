@@ -2,7 +2,8 @@ import type {
   Supplier, PurchaseOrder, SKU, ProcurementSuggestion,
   ProductionSchedule, RiskEvent, ChainNode, AlertEvent,
   KPIData, BalanceScenario, SeasonFactor, DeliveryRecord,
-  RegionEvent, SupplierRiskMonitor, ChainBreakAlert
+  RegionEvent, SupplierRiskMonitor, ChainBreakAlert,
+  AlternativeSupplier
 } from '@/types'
 
 export const suppliers: Supplier[] = [
@@ -408,3 +409,130 @@ export const chainBreakAlerts: ChainBreakAlert[] = [
     status: 'pending'
   },
 ]
+
+export const alternativeSuppliers: AlternativeSupplier[] = [
+  {
+    id: 'ALT001', name: '宝钢集团', category: '原材料',
+    onTimeRate: 0.95, leadTime: 8, quality: 97, cost: 88,
+    region: '华东地区', certification: ['ISO9001', 'ISO14001', 'IATF16949'],
+    capacity: 50000, historicalDeliveryCount: 328, averageDelayDays: 0.5,
+    pricePerUnit: 48, cooperationYears: 8, hasEmergencyResponse: true, minimumOrderQty: 500
+  },
+  {
+    id: 'ALT002', name: '首钢股份', category: '原材料',
+    onTimeRate: 0.92, leadTime: 10, quality: 94, cost: 82,
+    region: '华北地区', certification: ['ISO9001', 'ISO14001'],
+    capacity: 35000, historicalDeliveryCount: 156, averageDelayDays: 1.2,
+    pricePerUnit: 44, cooperationYears: 5, hasEmergencyResponse: false, minimumOrderQty: 800
+  },
+  {
+    id: 'ALT003', name: '山东化工', category: '化工原料',
+    onTimeRate: 0.94, leadTime: 9, quality: 95, cost: 85,
+    region: '华东地区', certification: ['ISO9001', 'ISO14001', 'OHSAS18001'],
+    capacity: 12000, historicalDeliveryCount: 245, averageDelayDays: 0.8,
+    pricePerUnit: 88, cooperationYears: 6, hasEmergencyResponse: true, minimumOrderQty: 200
+  },
+  {
+    id: 'ALT004', name: '江苏化学', category: '化工原料',
+    onTimeRate: 0.90, leadTime: 11, quality: 92, cost: 78,
+    region: '华东地区', certification: ['ISO9001', 'ISO14001'],
+    capacity: 8000, historicalDeliveryCount: 98, averageDelayDays: 1.8,
+    pricePerUnit: 82, cooperationYears: 3, hasEmergencyResponse: false, minimumOrderQty: 300
+  },
+  {
+    id: 'ALT005', name: '深圳芯城', category: '元器件',
+    onTimeRate: 0.96, leadTime: 7, quality: 98, cost: 90,
+    region: '华南地区', certification: ['ISO9001', 'IATF16949', 'ESD'],
+    capacity: 200000, historicalDeliveryCount: 512, averageDelayDays: 0.3,
+    pricePerUnit: 13, cooperationYears: 10, hasEmergencyResponse: true, minimumOrderQty: 1000
+  },
+  {
+    id: 'ALT006', name: '上海矽睿', category: '元器件',
+    onTimeRate: 0.91, leadTime: 12, quality: 93, cost: 80,
+    region: '华东地区', certification: ['ISO9001', 'IATF16949'],
+    capacity: 150000, historicalDeliveryCount: 178, averageDelayDays: 2.1,
+    pricePerUnit: 11, cooperationYears: 4, hasEmergencyResponse: false, minimumOrderQty: 2000
+  },
+  {
+    id: 'ALT007', name: '合兴包装', category: '包装材料',
+    onTimeRate: 0.93, leadTime: 4, quality: 92, cost: 88,
+    region: '华南地区', certification: ['ISO9001', 'FSC'],
+    capacity: 500000, historicalDeliveryCount: 425, averageDelayDays: 0.6,
+    pricePerUnit: 3.2, cooperationYears: 7, hasEmergencyResponse: true, minimumOrderQty: 5000
+  },
+  {
+    id: 'ALT008', name: '胜达包装', category: '包装材料',
+    onTimeRate: 0.89, leadTime: 5, quality: 88, cost: 80,
+    region: '华东地区', certification: ['ISO9001'],
+    capacity: 300000, historicalDeliveryCount: 165, averageDelayDays: 1.5,
+    pricePerUnit: 2.8, cooperationYears: 3, hasEmergencyResponse: false, minimumOrderQty: 8000
+  },
+  {
+    id: 'ALT009', name: '东莞精模', category: '模具配件',
+    onTimeRate: 0.94, leadTime: 10, quality: 96, cost: 86,
+    region: '华南地区', certification: ['ISO9001', 'ISO14001'],
+    capacity: 500, historicalDeliveryCount: 128, averageDelayDays: 1.0,
+    pricePerUnit: 295, cooperationYears: 5, hasEmergencyResponse: true, minimumOrderQty: 5
+  },
+  {
+    id: 'ALT010', name: '苏州模具', category: '模具配件',
+    onTimeRate: 0.88, leadTime: 14, quality: 90, cost: 76,
+    region: '华东地区', certification: ['ISO9001'],
+    capacity: 350, historicalDeliveryCount: 68, averageDelayDays: 2.5,
+    pricePerUnit: 265, cooperationYears: 2, hasEmergencyResponse: false, minimumOrderQty: 8
+  },
+  {
+    id: 'ALT011', name: '顺丰速运', category: '运输服务',
+    onTimeRate: 0.97, leadTime: 2, quality: 95, cost: 75,
+    region: '全国', certification: ['ISO9001', 'ISO14001'],
+    capacity: 10000, historicalDeliveryCount: 1250, averageDelayDays: 0.2,
+    pricePerUnit: 120, cooperationYears: 12, hasEmergencyResponse: true, minimumOrderQty: 1
+  },
+  {
+    id: 'ALT012', name: '德邦物流', category: '运输服务',
+    onTimeRate: 0.92, leadTime: 3, quality: 90, cost: 85,
+    region: '全国', certification: ['ISO9001'],
+    capacity: 8000, historicalDeliveryCount: 680, averageDelayDays: 0.8,
+    pricePerUnit: 95, cooperationYears: 8, hasEmergencyResponse: true, minimumOrderQty: 1
+  },
+]
+
+export const alternativeSupplierRecommendations = [
+  {
+    id: 'REC001',
+    timestamp: '2024-06-17 14:35',
+    atRiskSupplierId: 'SUP004',
+    atRiskSupplierName: '恒盛化工',
+    triggerReason: '风险评分上升 + 连续交付不达标',
+    triggerDetails: {
+      riskIndex: 88,
+      onTimeRate: 0.72,
+      consecutiveDelays: 3
+    }
+  },
+  {
+    id: 'REC002',
+    timestamp: '2024-06-17 13:20',
+    atRiskSupplierId: 'SUP001',
+    atRiskSupplierName: '华信钢材',
+    triggerReason: '风险评分上升 + 区域物流中断',
+    triggerDetails: {
+      riskIndex: 82,
+      onTimeRate: 0.78,
+      consecutiveDelays: 2
+    }
+  },
+  {
+    id: 'REC003',
+    timestamp: '2024-06-17 10:50',
+    atRiskSupplierId: 'SUP005',
+    atRiskSupplierName: '精密模具',
+    triggerReason: '准时交付率持续下降',
+    triggerDetails: {
+      riskIndex: 72,
+      onTimeRate: 0.82,
+      consecutiveDelays: 2
+    }
+  },
+]
+
