@@ -144,3 +144,58 @@ export interface DeliveryRecord {
   delayDays: number
   orderNo: string
 }
+
+export interface RegionEvent {
+  id: string
+  type: 'natural_disaster' | 'policy_change' | 'logistics_disruption'
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  region: string
+  description: string
+  startDate: string
+  expectedEndDate: string
+  affectedSuppliers: string[]
+}
+
+export interface AffectedMaterial {
+  skuId: string
+  skuName: string
+  category: string
+  currentStock: number
+  dailyConsumption: number
+  stockoutDays: number
+  impactLevel: 'high' | 'medium' | 'low'
+}
+
+export interface SupplierRiskMonitor {
+  supplierId: string
+  supplierName: string
+  category: string
+  onTimeRate: number
+  onTimeRateTrend: number
+  capacityUtilization: number
+  capacityTrend: number
+  riskIndex: number
+  riskLevel: 'normal' | 'warning' | 'critical'
+  region: string
+  regionRisk: 'normal' | 'warning' | 'critical'
+  lastUpdated: string
+}
+
+export interface ChainBreakAlert {
+  id: string
+  timestamp: string
+  supplierId: string
+  supplierName: string
+  riskIndex: number
+  threshold: number
+  riskLevel: 'warning' | 'critical'
+  triggerType: 'on_time_rate' | 'capacity_utilization' | 'region_event'
+  triggerDescription: string
+  affectedMaterials: AffectedMaterial[]
+  estimatedStockoutWindow: {
+    start: string
+    end: string
+  }
+  recommendedActions: string[]
+  isAcknowledged: boolean
+}

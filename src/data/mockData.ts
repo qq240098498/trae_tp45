@@ -1,7 +1,8 @@
 import type {
   Supplier, PurchaseOrder, SKU, ProcurementSuggestion,
   ProductionSchedule, RiskEvent, ChainNode, AlertEvent,
-  KPIData, BalanceScenario, SeasonFactor, DeliveryRecord
+  KPIData, BalanceScenario, SeasonFactor, DeliveryRecord,
+  RegionEvent, SupplierRiskMonitor, ChainBreakAlert
 } from '@/types'
 
 export const suppliers: Supplier[] = [
@@ -264,3 +265,146 @@ export const costSimData = Array.from({ length: 20 }, (_, i) => {
   const shortageRisk = Math.max(0, (600 - qty) * 120)
   return { qty, totalCost: purchaseCost + storageCost + shortageRisk, purchaseCost, storageCost, shortageRisk }
 })
+
+export const regionEvents: RegionEvent[] = [
+  {
+    id: 'RE001', type: 'natural_disaster', severity: 'high', region: '华东地区',
+    description: '华东地区台风预警，东南沿海港口可能停运3-5天',
+    startDate: '2024-06-18', expectedEndDate: '2024-06-23',
+    affectedSuppliers: ['SUP006', 'SUP003']
+  },
+  {
+    id: 'RE002', type: 'policy_change', severity: 'medium', region: '华南地区',
+    description: '广东省环保新政，化工企业限产30%',
+    startDate: '2024-06-15', expectedEndDate: '2024-07-15',
+    affectedSuppliers: ['SUP004']
+  },
+  {
+    id: 'RE003', type: 'logistics_disruption', severity: 'critical', region: '华中地区',
+    description: '京港澳高速湖南段重大交通事故，双向封闭预计72小时',
+    startDate: '2024-06-17', expectedEndDate: '2024-06-20',
+    affectedSuppliers: ['SUP001', 'SUP005']
+  },
+]
+
+export const supplierRiskMonitors: SupplierRiskMonitor[] = [
+  {
+    supplierId: 'SUP001', supplierName: '华信钢材', category: '原材料',
+    onTimeRate: 0.78, onTimeRateTrend: -8.2,
+    capacityUtilization: 0.94, capacityTrend: 5.6,
+    riskIndex: 82, riskLevel: 'critical',
+    region: '华中地区', regionRisk: 'critical',
+    lastUpdated: '2024-06-17 14:30'
+  },
+  {
+    supplierId: 'SUP002', supplierName: '东方电子', category: '元器件',
+    onTimeRate: 0.88, onTimeRateTrend: -1.5,
+    capacityUtilization: 0.78, capacityTrend: 2.1,
+    riskIndex: 45, riskLevel: 'normal',
+    region: '华东地区', regionRisk: 'normal',
+    lastUpdated: '2024-06-17 14:30'
+  },
+  {
+    supplierId: 'SUP003', supplierName: '利达包装', category: '包装材料',
+    onTimeRate: 0.90, onTimeRateTrend: -3.8,
+    capacityUtilization: 0.82, capacityTrend: 4.5,
+    riskIndex: 58, riskLevel: 'warning',
+    region: '华东地区', regionRisk: 'warning',
+    lastUpdated: '2024-06-17 14:30'
+  },
+  {
+    supplierId: 'SUP004', supplierName: '恒盛化工', category: '化工原料',
+    onTimeRate: 0.72, onTimeRateTrend: -12.5,
+    capacityUtilization: 0.88, capacityTrend: 8.2,
+    riskIndex: 88, riskLevel: 'critical',
+    region: '华南地区', regionRisk: 'warning',
+    lastUpdated: '2024-06-17 14:30'
+  },
+  {
+    supplierId: 'SUP005', supplierName: '精密模具', category: '模具配件',
+    onTimeRate: 0.82, onTimeRateTrend: -5.3,
+    capacityUtilization: 0.91, capacityTrend: 6.8,
+    riskIndex: 72, riskLevel: 'warning',
+    region: '华中地区', regionRisk: 'critical',
+    lastUpdated: '2024-06-17 14:30'
+  },
+  {
+    supplierId: 'SUP006', supplierName: '宏达物流', category: '运输服务',
+    onTimeRate: 0.85, onTimeRateTrend: -6.5,
+    capacityUtilization: 0.86, capacityTrend: 3.2,
+    riskIndex: 65, riskLevel: 'warning',
+    region: '华东地区', regionRisk: 'warning',
+    lastUpdated: '2024-06-17 14:30'
+  },
+]
+
+export const chainBreakAlerts: ChainBreakAlert[] = [
+  {
+    id: 'CBA001', timestamp: '2024-06-17 14:32',
+    supplierId: 'SUP004', supplierName: '恒盛化工',
+    riskIndex: 88, threshold: 70, riskLevel: 'critical',
+    triggerType: 'region_event',
+    triggerDescription: '华南地区环保政策限产 + 交付准时率持续下降至72%',
+    affectedMaterials: [
+      { skuId: 'SKU004', skuName: '环氧树脂 EP-200', category: '化工原料', currentStock: 380, dailyConsumption: 18, stockoutDays: 21, impactLevel: 'high' },
+      { skuId: 'SKU007', skuName: '导热硅脂 TG-50', category: '辅材', currentStock: 220, dailyConsumption: 8, stockoutDays: 28, impactLevel: 'medium' },
+    ],
+    estimatedStockoutWindow: { start: '2024-07-08', end: '2024-07-20' },
+    recommendedActions: [
+      '立即启动备选供应商山东化工（提前备货500单位环氧树脂）',
+      '调整生产排程，优先保障A类订单需求',
+      '与恒盛化工协商紧急空运方案，缩短交付周期',
+    ],
+    isAcknowledged: false
+  },
+  {
+    id: 'CBA002', timestamp: '2024-06-17 13:15',
+    supplierId: 'SUP001', supplierName: '华信钢材',
+    riskIndex: 82, threshold: 70, riskLevel: 'critical',
+    triggerType: 'capacity_utilization',
+    triggerDescription: '产能利用率达94%超负荷运行 + 华中物流中断',
+    affectedMaterials: [
+      { skuId: 'SKU001', skuName: '冷轧钢板 2mm', category: '原材料', currentStock: 1200, dailyConsumption: 45, stockoutDays: 27, impactLevel: 'high' },
+      { skuId: 'SKU008', skuName: '铝合金型材 6063', category: '原材料', currentStock: 680, dailyConsumption: 16, stockoutDays: 43, impactLevel: 'medium' },
+    ],
+    estimatedStockoutWindow: { start: '2024-07-14', end: '2024-07-28' },
+    recommendedActions: [
+      '联系备选供应商宝钢集团，启动紧急采购流程',
+      '优化钢材下料工艺，提高材料利用率5-8%',
+      '评估部分非核心订单延期交付的可行性',
+    ],
+    isAcknowledged: false
+  },
+  {
+    id: 'CBA003', timestamp: '2024-06-17 10:45',
+    supplierId: 'SUP005', supplierName: '精密模具',
+    riskIndex: 72, threshold: 60, riskLevel: 'warning',
+    triggerType: 'on_time_rate',
+    triggerDescription: '近30天准时交付率降至82%，且华中物流受影响',
+    affectedMaterials: [
+      { skuId: 'SKU005', skuName: '注塑模具 A型', category: '模具配件', currentStock: 45, dailyConsumption: 2, stockoutDays: 23, impactLevel: 'high' },
+    ],
+    estimatedStockoutWindow: { start: '2024-07-10', end: '2024-07-18' },
+    recommendedActions: [
+      '提前下单锁定模具产能，增加安全库存至30套',
+      '评估模具自修能力，建立内部应急维修机制',
+    ],
+    isAcknowledged: true
+  },
+  {
+    id: 'CBA004', timestamp: '2024-06-17 09:20',
+    supplierId: 'SUP006', supplierName: '宏达物流',
+    riskIndex: 65, threshold: 60, riskLevel: 'warning',
+    triggerType: 'region_event',
+    triggerDescription: '华东台风预警影响沿海配送，准时率下降6.5%',
+    affectedMaterials: [
+      { skuId: 'SKU003', skuName: '瓦楞纸箱 50x40', category: '包装材料', currentStock: 15000, dailyConsumption: 800, stockoutDays: 19, impactLevel: 'medium' },
+    ],
+    estimatedStockoutWindow: { start: '2024-07-06', end: '2024-07-12' },
+    recommendedActions: [
+      '启用备用物流承运商顺丰速运覆盖华东区域',
+      '协调本地包装供应商紧急补单',
+    ],
+    isAcknowledged: false
+  },
+]

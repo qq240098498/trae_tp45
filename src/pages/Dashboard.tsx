@@ -3,13 +3,23 @@ import {
   Area, AreaChart, RadarChart, Radar, PolarGrid,
   PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer
 } from 'recharts'
+import type { LucideIcon } from 'lucide-react'
 import {
   TrendingUp, TrendingDown, BarChart3, Clock, Timer,
   Truck, AlertTriangle, AlertCircle, Info, X, ArrowRight,
-  Database, RefreshCw, Calculator, Archive
+  Database, RefreshCw, Calculator, Archive,
+  Factory, MapPin, CalendarDays, ShieldAlert, CheckCircle2,
+  Gauge, AlertOctagon, Zap, Package, ChevronDown, ChevronUp,
+  Flame, FileText, Users
 } from 'lucide-react'
-import { kpiData, chainNodes } from '@/data/mockData'
-import type { KPIData } from '@/types'
+import {
+  kpiData, chainNodes, supplierRiskMonitors,
+  regionEvents, chainBreakAlerts
+} from '@/data/mockData'
+import type {
+  KPIData, RegionEvent, ChainBreakAlert,
+  AffectedMaterial
+} from '@/types'
 import { useAppStore } from '@/store/appStore'
 
 const kpiIcons = [BarChart3, Clock, Timer, Truck]
@@ -114,7 +124,7 @@ function AlertStream() {
   }
 
   return (
-    <div className="card-static p-4 flex flex-col h-full animate-fade-in-up stagger-8">
+    <div className="card-static p-4 flex flex-col h-full animate-fade-in-up stagger-10">
       <h3 className="section-title mb-3">告警流</h3>
       <div className="flex gap-2 mb-3">
         {tabs.map((t) => (
@@ -182,7 +192,7 @@ function HealthRadar() {
   }, [])
 
   return (
-    <div className="card-static p-4 h-full animate-fade-in-up stagger-6">
+    <div className="card-static p-4 h-full animate-fade-in-up stagger-9">
       <h3 className="section-title mb-2">健康雷达</h3>
       <ResponsiveContainer width="100%" height={250}>
         <RadarChart data={radarData}>
@@ -307,6 +317,389 @@ function DataSourcePanel() {
   )
 }
 
+function SupplierRiskPanel() {
+  const getRiskColor = (level: string) => {
+    if (level === 'critical') return 'var(--accent-red)'
+    if (level === 'warning') return 'var(--accent-amber)'
+    return 'var(--accent-green)'
+  }
+
+  const getProgressColor = (val: number, invert = false) => {
+    const effective = invert ? 1 - val : val
+    if (effective >= 0.85) return 'var(--accent-red)'
+    if (effective >= 0.70) return 'var(--accent-amber)'
+    return 'var(--accent-green)'
+  }
+
+  return (
+    <div className="card-static p-4 animate-fade-in-up stagger-7 h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="section-title mb-0">
+          <Factory className="w-4 h-4" />
+          供应商风险监控
+        </h3>
+        <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <RefreshCw className="w-3 h-3" />
+          实时更新
+        </div>
+      </div>
+      <div className="space-y-3">
+        {supplierRiskMonitors.map((s) => (
+          <div key={s.supplierId} className="p-3 rounded-lg" style={{ background: 'var(--bg-primary)' }}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className={`status-dot status-${s.riskLevel}`} />
+                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{s.supplierName}</span>
+                <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(6,182,212,0.1)', color: 'var(--accent-cyan)' }}>
+                  {s.category}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Gauge className="w-3.5 h-3.5" style={{ color: getRiskColor(s.riskLevel) }} />
+                <span className="font-mono text-sm font-bold" style={{ color: getRiskColor(s.riskLevel) }}>
+                  {s.riskIndex}
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>准时交付率</span>
+                  <span className="text-xs font-mono" style={{ color: getProgressColor(s.onTimeRate, true) }}>
+                    {(s.onTimeRate * 100).toFixed(0)}%
+                    {s.onTimeRateTrend !== 0 && (
+                      <span className="ml-1" style={{ color: s.onTimeRateTrend < 0 ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+                        {s.onTimeRateTrend > 0 ? '+' : ''}{s.onTimeRateTrend}%
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-color)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${s.onTimeRate * 100}%`, background: getProgressColor(s.onTimeRate, true) }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>产能利用率</span>
+                  <span className="text-xs font-mono" style={{ color: getProgressColor(s.capacityUtilization) }}>
+                    {(s.capacityUtilization * 100).toFixed(0)}%
+                    {s.capacityTrend !== 0 && (
+                      <span className="ml-1" style={{ color: s.capacityTrend > 3 ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+                        {s.capacityTrend > 0 ? '+' : ''}{s.capacityTrend}%
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-color)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${s.capacityUtilization * 100}%`, background: getProgressColor(s.capacityUtilization) }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                <MapPin className="w-3 h-3" />
+                <span>{s.region}</span>
+                <span
+                  className={`status-dot ml-1 status-${s.regionRisk}`}
+                  style={{ width: 6, height: 6 }}
+                />
+              </div>
+              <span className="font-mono" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
+                {s.lastUpdated}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RegionEventPanel() {
+  const eventTypeMap: Record<RegionEvent['type'], { label: string; icon: LucideIcon; color: string }> = {
+    natural_disaster: { label: '自然灾害', icon: Flame, color: 'var(--accent-red)' },
+    policy_change: { label: '政策变化', icon: FileText, color: 'var(--accent-amber)' },
+    logistics_disruption: { label: '物流中断', icon: Truck, color: 'var(--accent-blue)' },
+  }
+
+  const severityBadge = (s: RegionEvent['severity']) => {
+    const map = { low: 'badge-good', medium: 'badge-info', high: 'badge-warning', critical: 'badge-critical' }
+    const label = { low: '低', medium: '中', high: '高', critical: '严重' }
+    return { cls: map[s], label: label[s] }
+  }
+
+  return (
+    <div className="card-static p-4 animate-fade-in-up stagger-8 h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="section-title mb-0">
+          <MapPin className="w-4 h-4" />
+          区域事件监控
+        </h3>
+        <span className="badge badge-critical">{regionEvents.filter(r => r.severity === 'critical' || r.severity === 'high').length} 项紧急</span>
+      </div>
+      <div className="space-y-3">
+        {regionEvents.map((evt) => {
+          const type = eventTypeMap[evt.type]
+          const Icon = type.icon
+          const sev = severityBadge(evt.severity)
+          return (
+            <div key={evt.id} className="p-3 rounded-lg" style={{ background: 'var(--bg-primary)' }}>
+              <div className="flex items-start gap-2 mb-2">
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${type.color}20` }}
+                >
+                  <Icon className="w-3.5 h-3.5" style={{ color: type.color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{evt.region}</span>
+                    <span className={`badge ${sev.cls}`}>{sev.label}</span>
+                  </div>
+                  <span className="text-xs" style={{ color: type.color }}>{type.label}</span>
+                </div>
+              </div>
+              <p className="text-xs mb-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                {evt.description}
+              </p>
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                  <CalendarDays className="w-3 h-3" />
+                  <span>{evt.startDate} ~ {evt.expectedEndDate}</span>
+                </div>
+                <div className="flex items-center gap-1" style={{ color: 'var(--accent-cyan)' }}>
+                  <Users className="w-3 h-3" />
+                  <span>影响 {evt.affectedSuppliers.length} 家供应商</span>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function ChainBreakAlertCard({ alert }: { alert: ChainBreakAlert }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const riskColor = alert.riskLevel === 'critical' ? 'var(--accent-red)' : 'var(--accent-amber)'
+  const triggerLabel: Record<ChainBreakAlert['triggerType'], string> = {
+    on_time_rate: '准时交付率',
+    capacity_utilization: '产能利用率',
+    region_event: '区域事件',
+  }
+
+  const impactColor = (level: AffectedMaterial['impactLevel']) => {
+    if (level === 'high') return 'var(--accent-red)'
+    if (level === 'medium') return 'var(--accent-amber)'
+    return 'var(--accent-green)'
+  }
+
+  return (
+    <div
+      className="rounded-lg border overflow-hidden transition-all"
+      style={{
+        background: 'var(--bg-primary)',
+        borderColor: alert.riskLevel === 'critical' ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.3)',
+      }}
+    >
+      <div
+        className="p-3 cursor-pointer transition-colors"
+        style={{ background: alert.riskLevel === 'critical' ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.04)' }}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          {alert.riskLevel === 'critical' ? (
+            <AlertOctagon className="w-4 h-4 flex-shrink-0" style={{ color: riskColor }} />
+          ) : (
+            <ShieldAlert className="w-4 h-4 flex-shrink-0" style={{ color: riskColor }} />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{alert.supplierName}</span>
+              <span className={`badge ${alert.riskLevel === 'critical' ? 'badge-critical' : 'badge-warning'}`}>
+                {alert.riskLevel === 'critical' ? '严重告警' : '风险预警'}
+              </span>
+              {alert.isAcknowledged && (
+                <span className="badge badge-good"><CheckCircle2 className="w-3 h-3 inline mr-0.5" />已确认</span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="text-right">
+              <div className="font-mono text-sm font-bold" style={{ color: riskColor }}>
+                风险指数 {alert.riskIndex}
+              </div>
+              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                阈值 {alert.threshold}
+              </div>
+            </div>
+            {expanded ? (
+              <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+            ) : (
+              <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs mb-1">
+          <Zap className="w-3 h-3" style={{ color: riskColor }} />
+          <span style={{ color: 'var(--text-muted)' }}>触发：</span>
+          <span style={{ color: 'var(--text-secondary)' }}>{triggerLabel[alert.triggerType]}</span>
+          <span style={{ color: 'var(--text-muted)' }}>—</span>
+          <span style={{ color: 'var(--text-secondary)' }}>{alert.triggerDescription}</span>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1">
+            <Package className="w-3 h-3" style={{ color: 'var(--accent-cyan)' }} />
+            <span style={{ color: 'var(--text-muted)' }}>影响物料：</span>
+            <span className="font-mono" style={{ color: 'var(--accent-cyan)' }}>{alert.affectedMaterials.length} 项</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <CalendarDays className="w-3 h-3" style={{ color: 'var(--accent-amber)' }} />
+            <span style={{ color: 'var(--text-muted)' }}>预计断供：</span>
+            <span className="font-mono" style={{ color: 'var(--accent-amber)' }}>
+              {alert.estimatedStockoutWindow.start} ~ {alert.estimatedStockoutWindow.end}
+            </span>
+          </div>
+          <div className="flex-1" />
+          <span className="font-mono" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>{alert.timestamp}</span>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="p-3 border-t" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="mb-3">
+            <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+              <Package className="w-3.5 h-3.5" />
+              受影响物料清单
+            </div>
+            <div className="rounded-lg overflow-hidden" style={{ background: 'var(--bg-secondary)' }}>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: 'var(--bg-card)' }}>
+                    <th className="text-left px-3 py-2 font-medium" style={{ color: 'var(--text-muted)' }}>物料名称</th>
+                    <th className="text-left px-3 py-2 font-medium" style={{ color: 'var(--text-muted)' }}>分类</th>
+                    <th className="text-right px-3 py-2 font-medium" style={{ color: 'var(--text-muted)' }}>当前库存</th>
+                    <th className="text-right px-3 py-2 font-medium" style={{ color: 'var(--text-muted)' }}>日消耗</th>
+                    <th className="text-right px-3 py-2 font-medium" style={{ color: 'var(--text-muted)' }}>可支持天数</th>
+                    <th className="text-center px-3 py-2 font-medium" style={{ color: 'var(--text-muted)' }}>影响等级</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {alert.affectedMaterials.map((m) => (
+                    <tr key={m.skuId} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
+                      <td className="px-3 py-2" style={{ color: 'var(--text-primary)' }}>{m.skuName}</td>
+                      <td className="px-3 py-2" style={{ color: 'var(--text-secondary)' }}>{m.category}</td>
+                      <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--text-primary)' }}>{m.currentStock}</td>
+                      <td className="px-3 py-2 text-right font-mono" style={{ color: 'var(--text-secondary)' }}>{m.dailyConsumption}</td>
+                      <td className="px-3 py-2 text-right font-mono" style={{ color: m.stockoutDays <= 25 ? 'var(--accent-red)' : m.stockoutDays <= 35 ? 'var(--accent-amber)' : 'var(--accent-green)' }}>
+                        {m.stockoutDays} 天
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className="inline-block px-1.5 py-0.5 rounded text-xs"
+                          style={{
+                            background: `${impactColor(m.impactLevel)}20`,
+                            color: impactColor(m.impactLevel),
+                          }}
+                        >
+                          {m.impactLevel === 'high' ? '高' : m.impactLevel === 'medium' ? '中' : '低'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: 'var(--accent-amber)' }} />
+              推荐应对措施
+            </div>
+            <div className="space-y-2">
+              {alert.recommendedActions.map((action, i) => (
+                <div key={i} className="flex items-start gap-2 p-2 rounded" style={{ background: 'var(--bg-secondary)' }}>
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: 'rgba(245,158,11,0.15)' }}
+                  >
+                    <span className="font-mono text-xs font-bold" style={{ color: 'var(--accent-amber)' }}>{i + 1}</span>
+                  </div>
+                  <span className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ChainBreakAlertPanel() {
+  const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'unacknowledged'>('all')
+
+  const filtered = useMemo(() => {
+    if (filter === 'all') return chainBreakAlerts
+    if (filter === 'critical') return chainBreakAlerts.filter(a => a.riskLevel === 'critical')
+    if (filter === 'warning') return chainBreakAlerts.filter(a => a.riskLevel === 'warning')
+    return chainBreakAlerts.filter(a => !a.isAcknowledged)
+  }, [filter])
+
+  const criticalCount = chainBreakAlerts.filter(a => a.riskLevel === 'critical').length
+  const unackCount = chainBreakAlerts.filter(a => !a.isAcknowledged).length
+
+  const tabs = [
+    { key: 'all', label: '全部' },
+    { key: 'critical', label: `严重 ${criticalCount}`, badge: 'badge-critical' },
+    { key: 'warning', label: '预警' },
+    { key: 'unacknowledged', label: `待处理 ${unackCount}`, badge: 'badge-warning' },
+  ] as const
+
+  return (
+    <div className="card-static p-4 flex flex-col animate-fade-in-up stagger-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="section-title mb-0">
+          <AlertOctagon className="w-4 h-4" style={{ color: 'var(--accent-red)' }} />
+          断链预警告警
+          <span className="ml-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+            实时监控供应商准时率、产能利用率与区域突发事件
+          </span>
+        </h3>
+        <div className="flex items-center gap-2">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setFilter(t.key)}
+              className="text-xs px-2.5 py-1 rounded transition-colors flex items-center gap-1"
+              style={{
+                color: filter === t.key ? 'var(--accent-cyan)' : 'var(--text-muted)',
+                background: filter === t.key ? 'rgba(6,182,212,0.1)' : 'transparent',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+        {filtered.map((alert) => (
+          <ChainBreakAlertCard key={alert.id} alert={alert} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [time, setTime] = useState(() => new Date())
 
@@ -332,11 +725,19 @@ export default function Dashboard() {
 
       <ChainFlow />
 
-      <div className="grid grid-cols-5 gap-4" style={{ minHeight: 320 }}>
-        <div className="col-span-2">
+      <ChainBreakAlertPanel />
+
+      <div className="grid grid-cols-5 gap-4" style={{ minHeight: 360 }}>
+        <div className="col-span-1">
+          <SupplierRiskPanel />
+        </div>
+        <div className="col-span-1">
+          <RegionEventPanel />
+        </div>
+        <div className="col-span-1">
           <HealthRadar />
         </div>
-        <div className="col-span-3">
+        <div className="col-span-2">
           <AlertStream />
         </div>
       </div>
