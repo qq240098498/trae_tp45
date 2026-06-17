@@ -221,6 +221,14 @@ export interface AlternativeSupplier {
   cooperationYears: number
   hasEmergencyResponse: boolean
   minimumOrderQty: number
+  supplyMaterials: Array<{
+    skuId: string
+    skuName: string
+    supplyPrice: number
+    currentStock: number
+    maxCapacity: number
+    qualityLevel: 'A' | 'B' | 'C'
+  }>
 }
 
 export interface RecommendationScores {

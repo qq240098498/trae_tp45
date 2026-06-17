@@ -815,10 +815,12 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
 
 function AlternativeSupplierCard({
   rec,
-  atRiskSupplierName
+  atRiskSupplierName,
+  totalCount
 }: {
   rec: AltRecType['recommendations'][0]
   atRiskSupplierName: string
+  totalCount: number
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -829,167 +831,310 @@ function AlternativeSupplierCard({
     return 'var(--accent-red)'
   }
 
-  const rankColors = ['var(--accent-amber)', 'var(--text-muted)', 'var(--accent-amber)']
-  const rankBgColors = ['rgba(245,158,11,0.15)', 'rgba(148,163,184,0.1)', 'rgba(245,158,11,0.1)']
+  const getQualityColor = (level: string) => {
+    if (level === 'A') return 'var(--accent-green)'
+    if (level === 'B') return 'var(--accent-cyan)'
+    return 'var(--accent-amber)'
+  }
+
+  const rankBadgeConfig = {
+    1: {
+      bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      border: 'rgba(245,158,11,0.5)',
+      label: 'TOP 1',
+      shadow: '0 4px 12px rgba(245,158,11,0.3)'
+    },
+    2: {
+      bg: 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+      border: 'rgba(148,163,184,0.5)',
+      label: 'TOP 2',
+      shadow: '0 4px 12px rgba(148,163,184,0.3)'
+    },
+    3: {
+      bg: 'linear-gradient(135deg, #b45309 0%, #92400e 100%)',
+      border: 'rgba(180,83,9,0.5)',
+      label: 'TOP 3',
+      shadow: '0 4px 12px rgba(180,83,9,0.3)'
+    }
+  }
+
+  const rankConfig = rankBadgeConfig[rec.rank as 1 | 2 | 3]
 
   return (
     <div
-      className="rounded-lg border overflow-hidden transition-all"
+      className="rounded-lg overflow-hidden transition-all"
       style={{
         background: 'var(--bg-primary)',
-        borderColor: rec.rank === 1 ? 'rgba(245,158,11,0.4)' : 'var(--border-color)',
+        border: `2px solid ${rec.rank === 1 ? 'rgba(245,158,11,0.5)' : rec.rank === 2 ? 'rgba(148,163,184,0.4)' : 'rgba(180,83,9,0.35)'}`,
+        boxShadow: rec.rank === 1 ? '0 4px 20px rgba(245,158,11,0.15)' : 'none'
       }}
     >
       <div
-        className="p-3 cursor-pointer transition-colors"
+        className="cursor-pointer transition-colors"
         style={{
           background: rec.rank === 1 ? 'rgba(245,158,11,0.06)' : 'transparent'
         }}
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-start gap-3">
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: rankBgColors[rec.rank - 1] }}
-          >
-            <span className="font-mono font-bold text-lg" style={{ color: rankColors[rec.rank - 1] }}>
-              {rec.rank}
-            </span>
-          </div>
+        <div className="p-3 pb-0">
+          <div className="flex items-center gap-3 mb-3">
+            <div
+              className="px-3 py-1.5 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{
+                background: rankConfig.bg,
+                border: `1px solid ${rankConfig.border}`,
+                boxShadow: rankConfig.shadow
+              }}
+            >
+              <Award className="w-4 h-4 mr-1" style={{ color: '#fff' }} />
+              <span className="font-mono font-bold text-sm" style={{ color: '#fff' }}>
+                {rankConfig.label}
+              </span>
+              <span className="text-xs ml-2 opacity-75" style={{ color: '#fff' }}>
+                / {totalCount}
+              </span>
+            </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
                   {rec.supplier.name}
                 </span>
-                <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'rgba(6,182,212,0.1)', color: 'var(--accent-cyan)' }}>
+                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(6,182,212,0.1)', color: 'var(--accent-cyan)' }}>
                   {rec.supplier.category}
                 </span>
-                {rec.rank === 1 && (
-                  <span className="text-xs px-1.5 py-0.5 rounded flex items-center gap-0.5" style={{ background: 'rgba(245,158,11,0.15)', color: 'var(--accent-amber)' }}>
-                    <Award className="w-3 h-3" />
-                    最优推荐
+                {rec.supplier.hasEmergencyResponse && (
+                  <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-0.5" style={{ background: 'rgba(34,197,94,0.1)', color: 'var(--accent-green)' }}>
+                    <CheckCircle2 className="w-3 h-3" />
+                    应急响应
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1">
-                <Star className="w-3.5 h-3.5" style={{ color: 'var(--accent-amber)' }} />
-                <span className="font-mono text-sm font-bold" style={{ color: getScoreColor(rec.scores.overallScore) }}>
+            </div>
+
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'var(--bg-secondary)' }}>
+              <Star className="w-4 h-4" style={{ color: 'var(--accent-amber)', fill: 'var(--accent-amber)' }} />
+              <div className="text-right">
+                <div className="font-mono text-lg font-bold leading-none" style={{ color: getScoreColor(rec.scores.overallScore) }}>
                   {rec.scores.overallScore}
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>综合评分</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-3 pb-3">
+          <div className="grid grid-cols-4 gap-3 mb-3">
+            <ScoreBar label="资质匹配" value={rec.scores.qualificationMatch} color={getScoreColor(rec.scores.qualificationMatch)} />
+            <ScoreBar label="交付表现" value={rec.scores.deliveryPerformance} color={getScoreColor(rec.scores.deliveryPerformance)} />
+            <ScoreBar label="价格竞争" value={rec.scores.priceCompetitiveness} color={getScoreColor(rec.scores.priceCompetitiveness)} />
+            <ScoreBar label="切换成本" value={rec.scores.switchingCost} color={getScoreColor(rec.scores.switchingCost)} />
+          </div>
+
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
+                <MapPin className="w-3 h-3" style={{ color: 'var(--text-muted)' }} />
+                <span style={{ color: 'var(--text-secondary)' }}>{rec.supplier.region}</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
+                <Clock3 className="w-3 h-3" style={{ color: 'var(--text-muted)' }} />
+                <span style={{ color: 'var(--text-secondary)' }}>切换周期</span>
+                <span className="font-mono font-bold" style={{ color: 'var(--accent-cyan)' }}>{rec.estimatedSwitchingDays} 天</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
+                <DollarSign className="w-3 h-3" style={{ color: 'var(--text-muted)' }} />
+                <span style={{ color: 'var(--text-secondary)' }}>成本变化</span>
+                <span className="font-mono font-bold" style={{ color: rec.estimatedCostIncrease > 0 ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+                  {rec.estimatedCostIncrease > 0 ? '+' : ''}{rec.estimatedCostIncrease}%
+                </span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
+                <CheckCircle2 className="w-3 h-3" style={{ color: 'var(--text-muted)' }} />
+                <span style={{ color: 'var(--text-secondary)' }}>准时率</span>
+                <span className="font-mono font-bold" style={{ color: getScoreColor(rec.supplier.onTimeRate * 100) }}>
+                  {(rec.supplier.onTimeRate * 100).toFixed(0)}%
                 </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-3 mb-2">
-              <ScoreBar label="资质匹配" value={rec.scores.qualificationMatch} color={getScoreColor(rec.scores.qualificationMatch)} />
-              <ScoreBar label="交付表现" value={rec.scores.deliveryPerformance} color={getScoreColor(rec.scores.deliveryPerformance)} />
-              <ScoreBar label="价格竞争" value={rec.scores.priceCompetitiveness} color={getScoreColor(rec.scores.priceCompetitiveness)} />
-              <ScoreBar label="切换成本" value={rec.scores.switchingCost} color={getScoreColor(rec.scores.switchingCost)} />
-            </div>
-
-            <div className="flex items-center gap-4 text-xs">
-              <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                <MapPin className="w-3 h-3" />
-                <span>{rec.supplier.region}</span>
-              </div>
-              <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                <Clock3 className="w-3 h-3" />
-                <span>切换周期 <span className="font-mono" style={{ color: 'var(--accent-cyan)' }}>{rec.estimatedSwitchingDays} 天</span></span>
-              </div>
-              <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                <DollarSign className="w-3 h-3" />
-                <span>成本变化 <span className="font-mono" style={{ color: rec.estimatedCostIncrease > 0 ? 'var(--accent-red)' : 'var(--accent-green)' }}>
-                  {rec.estimatedCostIncrease > 0 ? '+' : ''}{rec.estimatedCostIncrease}%
-                </span></span>
-              </div>
-              <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                <CheckCircle2 className="w-3 h-3" />
-                <span>准时率 <span className="font-mono" style={{ color: getScoreColor(rec.supplier.onTimeRate * 100) }}>
-                  {(rec.supplier.onTimeRate * 100).toFixed(0)}%
-                </span></span>
-              </div>
+            <div className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg" style={{ color: 'var(--accent-cyan)', background: 'rgba(6,182,212,0.08)' }}>
+              <Package className="w-3 h-3" />
+              <span>可提供 <span className="font-bold">{rec.supplier.supplyMaterials.length}</span> 类物料</span>
+              {expanded ? (
+                <ChevronUp className="w-3 h-3 ml-1" />
+              ) : (
+                <ChevronDown className="w-3 h-3 ml-1" />
+              )}
             </div>
           </div>
 
-          {expanded ? (
-            <ChevronUp className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
-          ) : (
-            <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
-          )}
+          <div className="p-2 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
+            <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+              <Package className="w-3.5 h-3.5" style={{ color: 'var(--accent-cyan)' }} />
+              可供应物料清单
+              <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>
+                （点击卡片展开查看详细对比）
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {rec.supplier.supplyMaterials.map(mat => (
+                <div
+                  key={mat.skuId}
+                  className="flex items-center gap-2 px-2 py-1 rounded-md text-xs"
+                  style={{
+                    background: 'var(--bg-primary)',
+                    border: `1px solid ${getQualityColor(mat.qualityLevel)}30`
+                  }}
+                >
+                  <span
+                    className="px-1.5 py-0.5 rounded text-xs font-bold"
+                    style={{
+                      background: `${getQualityColor(mat.qualityLevel)}20`,
+                      color: getQualityColor(mat.qualityLevel)
+                    }}
+                  >
+                    {mat.qualityLevel}
+                  </span>
+                  <span style={{ color: 'var(--text-primary)' }} className="font-medium">{mat.skuName}</span>
+                  <span className="font-mono" style={{ color: 'var(--accent-amber)' }}>¥{mat.supplyPrice}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {expanded && (
-        <div className="p-3 border-t" style={{ borderColor: 'var(--border-color)' }}>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
-                <Clock3 className="w-3.5 h-3.5" />
-                切换阶段预估
-              </div>
-              <div className="space-y-2">
-                {rec.switchingPhases.map((phase, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(6,182,212,0.15)' }}>
-                      <span className="font-mono text-xs font-bold" style={{ color: 'var(--accent-cyan)' }}>{i + 1}</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{phase.phase}</span>
-                        <span className="text-xs font-mono" style={{ color: 'var(--accent-amber)' }}>{phase.duration} 天</span>
-                      </div>
-                      <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{phase.description}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
-                  <Award className="w-3.5 h-3.5" />
-                  资质认证
+        <div className="border-t" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="p-3" style={{ background: 'var(--bg-secondary)' }}>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl" style={{ background: 'var(--bg-primary)' }}>
+                <div className="text-xs font-medium mb-3 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                  <Clock3 className="w-3.5 h-3.5" />
+                  切换阶段预估
+                  <span className="ml-auto font-mono font-bold" style={{ color: 'var(--accent-amber)' }}>
+                    {rec.estimatedSwitchingDays} 天
+                  </span>
                 </div>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {rec.supplier.certification.map((cert, i) => (
-                    <span key={i} className="text-xs px-2 py-0.5 rounded" style={{ background: 'rgba(34,197,94,0.1)', color: 'var(--accent-green)' }}>
-                      {cert}
-                    </span>
+                <div className="space-y-2">
+                  {rec.switchingPhases.map((phase, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(6,182,212,0.15)' }}>
+                        <span className="font-mono text-xs font-bold" style={{ color: 'var(--accent-cyan)' }}>{i + 1}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{phase.phase}</span>
+                          <span className="text-xs font-mono flex-shrink-0" style={{ color: 'var(--accent-amber)' }}>{phase.duration}天</span>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
+              </div>
 
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="p-2 rounded" style={{ background: 'var(--bg-secondary)' }}>
+              <div className="p-3 rounded-xl" style={{ background: 'var(--bg-primary)' }}>
+                <div className="text-xs font-medium mb-3 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                  <Package className="w-3.5 h-3.5" />
+                  物料供应详情
+                </div>
+                <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border-color)' }}>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr style={{ background: 'var(--bg-secondary)' }}>
+                        <th className="text-left px-2 py-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>物料</th>
+                        <th className="text-right px-2 py-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>单价</th>
+                        <th className="text-right px-2 py-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>库存</th>
+                        <th className="text-center px-2 py-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>等级</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rec.supplier.supplyMaterials.map(mat => (
+                        <tr key={mat.skuId} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
+                          <td className="px-2 py-1.5 truncate" style={{ color: 'var(--text-primary)' }}>{mat.skuName}</td>
+                          <td className="px-2 py-1.5 text-right font-mono" style={{ color: 'var(--accent-amber)' }}>¥{mat.supplyPrice}</td>
+                          <td className="px-2 py-1.5 text-right font-mono" style={{ color: mat.currentStock / mat.maxCapacity > 0.5 ? 'var(--accent-green)' : 'var(--accent-amber)' }}>
+                            {mat.currentStock >= 99999 ? '∞' : mat.currentStock.toLocaleString()}
+                          </td>
+                          <td className="px-2 py-1.5 text-center">
+                            <span
+                              className="px-1.5 py-0.5 rounded text-xs font-bold"
+                              style={{
+                                background: `${getQualityColor(mat.qualityLevel)}20`,
+                                color: getQualityColor(mat.qualityLevel)
+                              }}
+                            >
+                              {mat.qualityLevel}级
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                  <div className="p-2 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
                     <div style={{ color: 'var(--text-muted)' }}>质量评分</div>
                     <div className="font-mono font-bold mt-0.5" style={{ color: 'var(--accent-green)' }}>{rec.supplier.quality}</div>
                   </div>
-                  <div className="p-2 rounded" style={{ background: 'var(--bg-secondary)' }}>
+                  <div className="p-2 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
                     <div style={{ color: 'var(--text-muted)' }}>历史交付</div>
-                    <div className="font-mono font-bold mt-0.5" style={{ color: 'var(--accent-cyan)' }}>{rec.supplier.historicalDeliveryCount} 次</div>
+                    <div className="font-mono font-bold mt-0.5" style={{ color: 'var(--accent-cyan)' }}>{rec.supplier.historicalDeliveryCount}次</div>
                   </div>
-                  <div className="p-2 rounded" style={{ background: 'var(--bg-secondary)' }}>
+                  <div className="p-2 rounded-lg" style={{ background: 'var(--bg-secondary)' }}>
                     <div style={{ color: 'var(--text-muted)' }}>平均延误</div>
                     <div className="font-mono font-bold mt-0.5" style={{ color: rec.supplier.averageDelayDays < 1 ? 'var(--accent-green)' : 'var(--accent-amber)' }}>
-                      {rec.supplier.averageDelayDays} 天
+                      {rec.supplier.averageDelayDays}天
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
-                  <ShieldAlert className="w-3.5 h-3.5" />
-                  风险缓解建议
-                </div>
-                <div className="space-y-1.5">
-                  {rec.riskMitigation.map((mitigation, i) => (
-                    <div key={i} className="flex items-start gap-1.5">
-                      <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: 'var(--accent-green)' }} />
-                      <span className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{mitigation}</span>
+              <div className="space-y-3">
+                <div className="p-3 rounded-xl" style={{ background: 'var(--bg-primary)' }}>
+                  <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                    <Award className="w-3.5 h-3.5" />
+                    资质认证
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {rec.supplier.certification.map((cert, i) => (
+                      <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', color: 'var(--accent-green)' }}>
+                        {cert}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span>合作年限</span>
+                      <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>{rec.supplier.cooperationYears} 年</span>
                     </div>
-                  ))}
+                    <div className="flex items-center justify-between mb-1">
+                      <span>最小起订</span>
+                      <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>{rec.supplier.minimumOrderQty.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>最大产能</span>
+                      <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>{rec.supplier.capacity.toLocaleString()}/月</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl" style={{ background: 'var(--bg-primary)' }}>
+                  <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    风险缓解建议
+                  </div>
+                  <div className="space-y-1.5">
+                    {rec.riskMitigation.map((mitigation, i) => (
+                      <div key={i} className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: 'var(--accent-green)' }} />
+                        <span className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{mitigation}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1098,6 +1243,7 @@ function AlternativeSupplierRecommendationPanel() {
                 key={rec.supplier.id}
                 rec={rec}
                 atRiskSupplierName={activeRec.atRiskSupplierName}
+                totalCount={activeRec.recommendations.length}
               />
             ))}
           </div>

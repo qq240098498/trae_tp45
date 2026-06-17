@@ -416,84 +416,128 @@ export const alternativeSuppliers: AlternativeSupplier[] = [
     onTimeRate: 0.95, leadTime: 8, quality: 97, cost: 88,
     region: '华东地区', certification: ['ISO9001', 'ISO14001', 'IATF16949'],
     capacity: 50000, historicalDeliveryCount: 328, averageDelayDays: 0.5,
-    pricePerUnit: 48, cooperationYears: 8, hasEmergencyResponse: true, minimumOrderQty: 500
+    pricePerUnit: 48, cooperationYears: 8, hasEmergencyResponse: true, minimumOrderQty: 500,
+    supplyMaterials: [
+      { skuId: 'SKU001', skuName: '冷轧钢板 2mm', supplyPrice: 48, currentStock: 8500, maxCapacity: 15000, qualityLevel: 'A' },
+      { skuId: 'SKU008', skuName: '铝合金型材 6063', supplyPrice: 65, currentStock: 3200, maxCapacity: 8000, qualityLevel: 'A' }
+    ]
   },
   {
     id: 'ALT002', name: '首钢股份', category: '原材料',
     onTimeRate: 0.92, leadTime: 10, quality: 94, cost: 82,
     region: '华北地区', certification: ['ISO9001', 'ISO14001'],
     capacity: 35000, historicalDeliveryCount: 156, averageDelayDays: 1.2,
-    pricePerUnit: 44, cooperationYears: 5, hasEmergencyResponse: false, minimumOrderQty: 800
+    pricePerUnit: 44, cooperationYears: 5, hasEmergencyResponse: false, minimumOrderQty: 800,
+    supplyMaterials: [
+      { skuId: 'SKU001', skuName: '冷轧钢板 2mm', supplyPrice: 44, currentStock: 6200, maxCapacity: 12000, qualityLevel: 'B' },
+      { skuId: 'SKU008', skuName: '铝合金型材 6063', supplyPrice: 58, currentStock: 2800, maxCapacity: 6000, qualityLevel: 'B' }
+    ]
   },
   {
     id: 'ALT003', name: '山东化工', category: '化工原料',
     onTimeRate: 0.94, leadTime: 9, quality: 95, cost: 85,
     region: '华东地区', certification: ['ISO9001', 'ISO14001', 'OHSAS18001'],
     capacity: 12000, historicalDeliveryCount: 245, averageDelayDays: 0.8,
-    pricePerUnit: 88, cooperationYears: 6, hasEmergencyResponse: true, minimumOrderQty: 200
+    pricePerUnit: 88, cooperationYears: 6, hasEmergencyResponse: true, minimumOrderQty: 200,
+    supplyMaterials: [
+      { skuId: 'SKU004', skuName: '环氧树脂 EP-200', supplyPrice: 88, currentStock: 1200, maxCapacity: 3000, qualityLevel: 'A' },
+      { skuId: 'SKU007', skuName: '导热硅脂 TG-50', supplyPrice: 26, currentStock: 850, maxCapacity: 2000, qualityLevel: 'A' }
+    ]
   },
   {
     id: 'ALT004', name: '江苏化学', category: '化工原料',
     onTimeRate: 0.90, leadTime: 11, quality: 92, cost: 78,
     region: '华东地区', certification: ['ISO9001', 'ISO14001'],
     capacity: 8000, historicalDeliveryCount: 98, averageDelayDays: 1.8,
-    pricePerUnit: 82, cooperationYears: 3, hasEmergencyResponse: false, minimumOrderQty: 300
+    pricePerUnit: 82, cooperationYears: 3, hasEmergencyResponse: false, minimumOrderQty: 300,
+    supplyMaterials: [
+      { skuId: 'SKU004', skuName: '环氧树脂 EP-200', supplyPrice: 82, currentStock: 780, maxCapacity: 2000, qualityLevel: 'B' },
+      { skuId: 'SKU007', skuName: '导热硅脂 TG-50', supplyPrice: 23, currentStock: 520, maxCapacity: 1200, qualityLevel: 'B' }
+    ]
   },
   {
     id: 'ALT005', name: '深圳芯城', category: '元器件',
     onTimeRate: 0.96, leadTime: 7, quality: 98, cost: 90,
     region: '华南地区', certification: ['ISO9001', 'IATF16949', 'ESD'],
     capacity: 200000, historicalDeliveryCount: 512, averageDelayDays: 0.3,
-    pricePerUnit: 13, cooperationYears: 10, hasEmergencyResponse: true, minimumOrderQty: 1000
+    pricePerUnit: 13, cooperationYears: 10, hasEmergencyResponse: true, minimumOrderQty: 1000,
+    supplyMaterials: [
+      { skuId: 'SKU002', skuName: 'MCU芯片 STM32', supplyPrice: 13, currentStock: 45000, maxCapacity: 100000, qualityLevel: 'A' },
+      { skuId: 'SKU006', skuName: '不锈钢螺栓 M8', supplyPrice: 0.85, currentStock: 120000, maxCapacity: 300000, qualityLevel: 'A' }
+    ]
   },
   {
     id: 'ALT006', name: '上海矽睿', category: '元器件',
     onTimeRate: 0.91, leadTime: 12, quality: 93, cost: 80,
     region: '华东地区', certification: ['ISO9001', 'IATF16949'],
     capacity: 150000, historicalDeliveryCount: 178, averageDelayDays: 2.1,
-    pricePerUnit: 11, cooperationYears: 4, hasEmergencyResponse: false, minimumOrderQty: 2000
+    pricePerUnit: 11, cooperationYears: 4, hasEmergencyResponse: false, minimumOrderQty: 2000,
+    supplyMaterials: [
+      { skuId: 'SKU002', skuName: 'MCU芯片 STM32', supplyPrice: 11, currentStock: 28000, maxCapacity: 80000, qualityLevel: 'B' },
+      { skuId: 'SKU006', skuName: '不锈钢螺栓 M8', supplyPrice: 0.72, currentStock: 85000, maxCapacity: 200000, qualityLevel: 'B' }
+    ]
   },
   {
     id: 'ALT007', name: '合兴包装', category: '包装材料',
     onTimeRate: 0.93, leadTime: 4, quality: 92, cost: 88,
     region: '华南地区', certification: ['ISO9001', 'FSC'],
     capacity: 500000, historicalDeliveryCount: 425, averageDelayDays: 0.6,
-    pricePerUnit: 3.2, cooperationYears: 7, hasEmergencyResponse: true, minimumOrderQty: 5000
+    pricePerUnit: 3.2, cooperationYears: 7, hasEmergencyResponse: true, minimumOrderQty: 5000,
+    supplyMaterials: [
+      { skuId: 'SKU003', skuName: '瓦楞纸箱 50x40', supplyPrice: 3.2, currentStock: 95000, maxCapacity: 250000, qualityLevel: 'A' }
+    ]
   },
   {
     id: 'ALT008', name: '胜达包装', category: '包装材料',
     onTimeRate: 0.89, leadTime: 5, quality: 88, cost: 80,
     region: '华东地区', certification: ['ISO9001'],
     capacity: 300000, historicalDeliveryCount: 165, averageDelayDays: 1.5,
-    pricePerUnit: 2.8, cooperationYears: 3, hasEmergencyResponse: false, minimumOrderQty: 8000
+    pricePerUnit: 2.8, cooperationYears: 3, hasEmergencyResponse: false, minimumOrderQty: 8000,
+    supplyMaterials: [
+      { skuId: 'SKU003', skuName: '瓦楞纸箱 50x40', supplyPrice: 2.8, currentStock: 62000, maxCapacity: 150000, qualityLevel: 'B' }
+    ]
   },
   {
     id: 'ALT009', name: '东莞精模', category: '模具配件',
     onTimeRate: 0.94, leadTime: 10, quality: 96, cost: 86,
     region: '华南地区', certification: ['ISO9001', 'ISO14001'],
     capacity: 500, historicalDeliveryCount: 128, averageDelayDays: 1.0,
-    pricePerUnit: 295, cooperationYears: 5, hasEmergencyResponse: true, minimumOrderQty: 5
+    pricePerUnit: 295, cooperationYears: 5, hasEmergencyResponse: true, minimumOrderQty: 5,
+    supplyMaterials: [
+      { skuId: 'SKU005', skuName: '注塑模具 A型', supplyPrice: 295, currentStock: 68, maxCapacity: 150, qualityLevel: 'A' }
+    ]
   },
   {
     id: 'ALT010', name: '苏州模具', category: '模具配件',
     onTimeRate: 0.88, leadTime: 14, quality: 90, cost: 76,
     region: '华东地区', certification: ['ISO9001'],
     capacity: 350, historicalDeliveryCount: 68, averageDelayDays: 2.5,
-    pricePerUnit: 265, cooperationYears: 2, hasEmergencyResponse: false, minimumOrderQty: 8
+    pricePerUnit: 265, cooperationYears: 2, hasEmergencyResponse: false, minimumOrderQty: 8,
+    supplyMaterials: [
+      { skuId: 'SKU005', skuName: '注塑模具 A型', supplyPrice: 265, currentStock: 32, maxCapacity: 80, qualityLevel: 'B' }
+    ]
   },
   {
     id: 'ALT011', name: '顺丰速运', category: '运输服务',
     onTimeRate: 0.97, leadTime: 2, quality: 95, cost: 75,
     region: '全国', certification: ['ISO9001', 'ISO14001'],
     capacity: 10000, historicalDeliveryCount: 1250, averageDelayDays: 0.2,
-    pricePerUnit: 120, cooperationYears: 12, hasEmergencyResponse: true, minimumOrderQty: 1
+    pricePerUnit: 120, cooperationYears: 12, hasEmergencyResponse: true, minimumOrderQty: 1,
+    supplyMaterials: [
+      { skuId: 'SKU001', skuName: '冷轧钢板 2mm（物流服务）', supplyPrice: 120, currentStock: 99999, maxCapacity: 99999, qualityLevel: 'A' },
+      { skuId: 'SKU003', skuName: '瓦楞纸箱 50x40（物流服务）', supplyPrice: 120, currentStock: 99999, maxCapacity: 99999, qualityLevel: 'A' }
+    ]
   },
   {
     id: 'ALT012', name: '德邦物流', category: '运输服务',
     onTimeRate: 0.92, leadTime: 3, quality: 90, cost: 85,
     region: '全国', certification: ['ISO9001'],
     capacity: 8000, historicalDeliveryCount: 680, averageDelayDays: 0.8,
-    pricePerUnit: 95, cooperationYears: 8, hasEmergencyResponse: true, minimumOrderQty: 1
+    pricePerUnit: 95, cooperationYears: 8, hasEmergencyResponse: true, minimumOrderQty: 1,
+    supplyMaterials: [
+      { skuId: 'SKU001', skuName: '冷轧钢板 2mm（物流服务）', supplyPrice: 95, currentStock: 99999, maxCapacity: 99999, qualityLevel: 'B' },
+      { skuId: 'SKU003', skuName: '瓦楞纸箱 50x40（物流服务）', supplyPrice: 95, currentStock: 99999, maxCapacity: 99999, qualityLevel: 'B' }
+    ]
   },
 ]
 
