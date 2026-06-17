@@ -355,7 +355,7 @@ export const chainBreakAlerts: ChainBreakAlert[] = [
       '调整生产排程，优先保障A类订单需求',
       '与恒盛化工协商紧急空运方案，缩短交付周期',
     ],
-    isAcknowledged: false
+    status: 'pending'
   },
   {
     id: 'CBA002', timestamp: '2024-06-17 13:15',
@@ -373,7 +373,7 @@ export const chainBreakAlerts: ChainBreakAlert[] = [
       '优化钢材下料工艺，提高材料利用率5-8%',
       '评估部分非核心订单延期交付的可行性',
     ],
-    isAcknowledged: false
+    status: 'pending'
   },
   {
     id: 'CBA003', timestamp: '2024-06-17 10:45',
@@ -389,7 +389,7 @@ export const chainBreakAlerts: ChainBreakAlert[] = [
       '提前下单锁定模具产能，增加安全库存至30套',
       '评估模具自修能力，建立内部应急维修机制',
     ],
-    isAcknowledged: true
+    status: 'acknowledged'
   },
   {
     id: 'CBA004', timestamp: '2024-06-17 09:20',
@@ -405,6 +405,6 @@ export const chainBreakAlerts: ChainBreakAlert[] = [
       '启用备用物流承运商顺丰速运覆盖华东区域',
       '协调本地包装供应商紧急补单',
     ],
-    isAcknowledged: false
+    status: 'pending'
   },
 ]

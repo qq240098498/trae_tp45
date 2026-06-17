@@ -8,17 +8,17 @@ import {
   TrendingUp, TrendingDown, BarChart3, Clock, Timer,
   Truck, AlertTriangle, AlertCircle, Info, X, ArrowRight,
   Database, RefreshCw, Calculator, Archive,
-  Factory, MapPin, CalendarDays, ShieldAlert, CheckCircle2,
+  Factory, MapPin, CalendarDays, ShieldAlert,
   Gauge, AlertOctagon, Zap, Package, ChevronDown, ChevronUp,
-  Flame, FileText, Users
+  Flame, FileText, Users, Eye, CheckCheck, CircleSlash2
 } from 'lucide-react'
 import {
   kpiData, chainNodes, supplierRiskMonitors,
-  regionEvents, chainBreakAlerts
+  regionEvents
 } from '@/data/mockData'
 import type {
   KPIData, RegionEvent, ChainBreakAlert,
-  AffectedMaterial
+  AffectedMaterial, AlertStatus
 } from '@/types'
 import { useAppStore } from '@/store/appStore'
 
@@ -488,6 +488,8 @@ function RegionEventPanel() {
 
 function ChainBreakAlertCard({ alert }: { alert: ChainBreakAlert }) {
   const [expanded, setExpanded] = useState(false)
+  const [showActions, setShowActions] = useState(false)
+  const { updateChainBreakAlertStatus } = useAppStore()
 
   const riskColor = alert.riskLevel === 'critical' ? 'var(--accent-red)' : 'var(--accent-amber)'
   const triggerLabel: Record<ChainBreakAlert['triggerType'], string> = {
@@ -496,23 +498,46 @@ function ChainBreakAlertCard({ alert }: { alert: ChainBreakAlert }) {
     region_event: '区域事件',
   }
 
+  const statusConfig: Record<AlertStatus, { label: string; badge: string; icon: LucideIcon; color: string }> = {
+    pending: { label: '待处理', badge: 'badge-warning', icon: AlertCircle, color: 'var(--accent-amber)' },
+    acknowledged: { label: '已知晓', badge: 'badge-info', icon: Eye, color: 'var(--accent-cyan)' },
+    resolved: { label: '已处理', badge: 'badge-good', icon: CheckCheck, color: 'var(--accent-green)' },
+    false_alarm: { label: '误报', badge: 'badge-info', icon: CircleSlash2, color: 'var(--text-muted)' },
+  }
+
   const impactColor = (level: AffectedMaterial['impactLevel']) => {
     if (level === 'high') return 'var(--accent-red)'
     if (level === 'medium') return 'var(--accent-amber)'
     return 'var(--accent-green)'
   }
 
+  const handleStatusChange = (e: React.MouseEvent, status: AlertStatus) => {
+    e.stopPropagation()
+    updateChainBreakAlertStatus(alert.id, status)
+    setShowActions(false)
+  }
+
+  const currentStatus = statusConfig[alert.status]
+  const StatusIcon = currentStatus.icon
+
   return (
     <div
       className="rounded-lg border overflow-hidden transition-all"
       style={{
         background: 'var(--bg-primary)',
-        borderColor: alert.riskLevel === 'critical' ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.3)',
+        borderColor: alert.status === 'resolved' || alert.status === 'false_alarm'
+          ? 'var(--border-color)'
+          : alert.riskLevel === 'critical' ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.3)',
+        opacity: alert.status === 'false_alarm' ? 0.6 : 1,
       }}
     >
       <div
         className="p-3 cursor-pointer transition-colors"
-        style={{ background: alert.riskLevel === 'critical' ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.04)' }}
+        style={{
+          background: alert.status === 'resolved' || alert.status === 'false_alarm'
+            ? 'transparent'
+            : alert.riskLevel === 'critical' ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.04)'
+        }}
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-2 mb-2">
@@ -522,13 +547,19 @@ function ChainBreakAlertCard({ alert }: { alert: ChainBreakAlert }) {
             <ShieldAlert className="w-4 h-4 flex-shrink-0" style={{ color: riskColor }} />
           )}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{alert.supplierName}</span>
               <span className={`badge ${alert.riskLevel === 'critical' ? 'badge-critical' : 'badge-warning'}`}>
                 {alert.riskLevel === 'critical' ? '严重告警' : '风险预警'}
               </span>
-              {alert.isAcknowledged && (
-                <span className="badge badge-good"><CheckCircle2 className="w-3 h-3 inline mr-0.5" />已确认</span>
+              <span className={`badge ${currentStatus.badge}`}>
+                <StatusIcon className="w-3 h-3 inline mr-0.5" />
+                {currentStatus.label}
+              </span>
+              {alert.handledAt && (
+                <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
+                  @ {alert.handledAt}
+                </span>
               )}
             </div>
           </div>
@@ -541,6 +572,58 @@ function ChainBreakAlertCard({ alert }: { alert: ChainBreakAlert }) {
                 阈值 {alert.threshold}
               </div>
             </div>
+
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowActions(!showActions)}
+                className="px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                <span>操作</span>
+                {showActions ? (
+                  <ChevronUp className="w-3 h-3" />
+                ) : (
+                  <ChevronDown className="w-3 h-3" />
+                )}
+              </button>
+              {showActions && (
+                <div
+                  className="absolute right-0 top-full mt-1 rounded-lg border shadow-lg z-10 overflow-hidden"
+                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', minWidth: 140 }}
+                >
+                  {(['acknowledged', 'resolved', 'false_alarm', 'pending'] as AlertStatus[]).map((status) => {
+                    if (status === alert.status) return null
+                    const cfg = statusConfig[status]
+                    const Icon = cfg.icon
+                    return (
+                      <button
+                        key={status}
+                        onClick={(e) => handleStatusChange(e, status)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors"
+                        style={{
+                          color: 'var(--text-secondary)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--bg-secondary)'
+                          e.currentTarget.style.color = cfg.color
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent'
+                          e.currentTarget.style.color = 'var(--text-secondary)'
+                        }}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span>标记为{cfg.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
             {expanded ? (
               <ChevronUp className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
             ) : (
@@ -574,7 +657,7 @@ function ChainBreakAlertCard({ alert }: { alert: ChainBreakAlert }) {
       </div>
 
       {expanded && (
-        <div className="p-3 border-t" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="p-3 border-t" style={{ borderColor: 'var(--border-color)' }} onClick={() => setShowActions(false)}>
           <div className="mb-3">
             <div className="text-xs font-medium mb-2 flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
               <Package className="w-3.5 h-3.5" />
@@ -646,23 +729,27 @@ function ChainBreakAlertCard({ alert }: { alert: ChainBreakAlert }) {
 }
 
 function ChainBreakAlertPanel() {
-  const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'unacknowledged'>('all')
+  const [filter, setFilter] = useState<'all' | 'critical' | 'warning' | 'pending' | 'acknowledged' | 'resolved' | 'false_alarm'>('all')
+  const { chainBreakAlerts } = useAppStore()
 
   const filtered = useMemo(() => {
     if (filter === 'all') return chainBreakAlerts
     if (filter === 'critical') return chainBreakAlerts.filter(a => a.riskLevel === 'critical')
     if (filter === 'warning') return chainBreakAlerts.filter(a => a.riskLevel === 'warning')
-    return chainBreakAlerts.filter(a => !a.isAcknowledged)
-  }, [filter])
+    return chainBreakAlerts.filter(a => a.status === filter)
+  }, [filter, chainBreakAlerts])
 
-  const criticalCount = chainBreakAlerts.filter(a => a.riskLevel === 'critical').length
-  const unackCount = chainBreakAlerts.filter(a => !a.isAcknowledged).length
+  const pendingCount = chainBreakAlerts.filter(a => a.status === 'pending').length
+  const ackCount = chainBreakAlerts.filter(a => a.status === 'acknowledged').length
+  const resolvedCount = chainBreakAlerts.filter(a => a.status === 'resolved').length
+  const falseAlarmCount = chainBreakAlerts.filter(a => a.status === 'false_alarm').length
 
   const tabs = [
-    { key: 'all', label: '全部' },
-    { key: 'critical', label: `严重 ${criticalCount}`, badge: 'badge-critical' },
-    { key: 'warning', label: '预警' },
-    { key: 'unacknowledged', label: `待处理 ${unackCount}`, badge: 'badge-warning' },
+    { key: 'all', label: `全部 ${chainBreakAlerts.length}` },
+    { key: 'pending', label: `待处理 ${pendingCount}`, badge: 'badge-warning' },
+    { key: 'acknowledged', label: `已知晓 ${ackCount}`, badge: 'badge-info' },
+    { key: 'resolved', label: `已处理 ${resolvedCount}`, badge: 'badge-good' },
+    { key: 'false_alarm', label: `误报 ${falseAlarmCount}`, badge: 'badge-info' },
   ] as const
 
   return (
@@ -675,7 +762,7 @@ function ChainBreakAlertPanel() {
             实时监控供应商准时率、产能利用率与区域突发事件
           </span>
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 flex-wrap">
           {tabs.map((t) => (
             <button
               key={t.key}
@@ -692,9 +779,15 @@ function ChainBreakAlertPanel() {
         </div>
       </div>
       <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
-        {filtered.map((alert) => (
-          <ChainBreakAlertCard key={alert.id} alert={alert} />
-        ))}
+        {filtered.length === 0 ? (
+          <div className="text-center py-8 text-xs" style={{ color: 'var(--text-muted)' }}>
+            当前筛选条件下无告警记录
+          </div>
+        ) : (
+          filtered.map((alert) => (
+            <ChainBreakAlertCard key={alert.id} alert={alert} />
+          ))
+        )}
       </div>
     </div>
   )

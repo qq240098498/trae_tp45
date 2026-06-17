@@ -181,6 +181,8 @@ export interface SupplierRiskMonitor {
   lastUpdated: string
 }
 
+export type AlertStatus = 'pending' | 'acknowledged' | 'resolved' | 'false_alarm'
+
 export interface ChainBreakAlert {
   id: string
   timestamp: string
@@ -197,5 +199,7 @@ export interface ChainBreakAlert {
     end: string
   }
   recommendedActions: string[]
-  isAcknowledged: boolean
+  status: AlertStatus
+  handledAt?: string
+  handledNote?: string
 }
